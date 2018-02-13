@@ -22,6 +22,7 @@ with open(sys.argv[1], 'r') as csv:
         if( stripped_column == '' or  ' ' in stripped_column):
             print("Error: columns must have a name and cannot contain spaces.")
             exit(0)
+        # Manually change id to INT
         output = output + '    ' + stripped_column + ' VARCHAR(255)'
         if( counter < len(tokenized)):
             output = output + ','
