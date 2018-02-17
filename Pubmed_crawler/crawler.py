@@ -26,27 +26,33 @@ def fetch_details(id_list):
 
 if __name__ == '__main__':
 
-    d = { 'id':[],'keywords':[], 'date_completed':[], 'date_revised':[], 'article_date':[], 'article_title':[], 'abstract':[], 'authors':[] }
+    d = { 'pmid':[],'keywords':[], 'date_completed':[], 'date_revised':[], 'article_date':[], 'article_title':[], 'abstract':[], 'authors':[] }
 
 
     results = search('Trisomy 18')
     id_list = results['IdList']
     papers = fetch_details(id_list)
     for i, paper in enumerate(papers['PubmedArticle']):
-        #print("%d) %s" % (i + 1, paper['MedlineCitation']['Article']))
-        print("id: %s" %  str(i))
+        print("ID: ")
+        print(paper['MedlineCitation']['PMID'])
         print()
+        print("Key Words:")
         for keyword in  paper['MedlineCitation']['KeywordList']:
             for item in keyword:
                 print(item)
 
-        
+        print()
+        print("Date:")
+        for date in paper['MedlineCitation']['Article']['ArticleDate']:
+            print( str(date['Year']) + "/" + date['Month'] +"/"+ date['Day'])
+        print()
 
         print("article title:")
-        print("%d) %s" % (i + 1, paper['MedlineCitation']['Article']['ArticleTitle']))
+        print("%d) %s" % (i + 1, str(paper['MedlineCitation']['Article']['ArticleTitle']).replace("[",'').replace("]","")))
 
         print("Abstract: ")
-        print("%s" % paper['MedlineCitation']['Article']['Abstract']['AbstractText'])
+        for abstract in paper['MedlineCitation']['Article']['Abstract']['AbstractText']:
+            print(abstract)
         print()
         print("author:")
         for person in paper['MedlineCitation']['Article']['AuthorList']:
@@ -54,12 +60,8 @@ if __name__ == '__main__':
             for affiliation in person['AffiliationInfo']:
                 print("%s" % affiliation['Affiliation'])
         print('<--------NEXT--------->')
-    # Print the details like JSon for better view
-    # print(json.dumps(papers['PubmedArticle'], indent=2, separators=(',', ':')))
-
-
 
 
     df = pd.DataFrame(data=d)
 
-    df.to_csv("contractor_companies_licenses.csv")
+    df.to_csv("pubmed_articles.csv")
