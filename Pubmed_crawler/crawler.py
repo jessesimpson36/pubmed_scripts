@@ -8,7 +8,7 @@ def search(query):
     Entrez.email = 'email@email.com'
     handle = Entrez.esearch(db='pubmed',
                             sort='relevance',
-                            retmax='1',
+                            retmax='5', # modify this to accept all articles when ready.
                             retmode='xml',
                             term=query)
     results = Entrez.read(handle)
@@ -26,42 +26,81 @@ def fetch_details(id_list):
 
 if __name__ == '__main__':
 
-    d = { 'pmid':[],'keywords':[], 'date_completed':[], 'date_revised':[], 'article_date':[], 'article_title':[], 'abstract':[], 'authors':[] }
+    d = { 'pmid':[],'rare_disease':[],'keywords':[], 'article_date':[], 'article_title':[], 'abstract':[], 'authors':[], 'authors_affiliations':[] }
+    pmid, rare_disease, keywords, article_date, article_title, abstract, authors = "", "", "", "", "", "", ""  
+    with open("diseases.txt", "r") as disease_file:
+        
+        for disease in disease_file:
+            try:
+                pmid, rare_disease, keywords, article_date, article_title, abstract, authors, authors_affiliations = "", "", "", "", "", "", "", "" 
+                disease = disease.strip()
 
+                # Remove this to get all of the rare diseases.
+                if "Ackerman" in disease:
+                    break
+                
+                # appending AND NC to the end will hopefully give values from north carolina.
+                results = search(disease + " AND (NC | North Carolina)")
+                id_list = results['IdList']
+                papers = fetch_details(id_list)
+                for i, paper in enumerate(papers['PubmedArticle']):
+                    pmid, rare_disease, keywords, article_date, article_title, abstract, authors, authors_affiliations = "", "", "", "", "", "", "", ""
+                    print("ID: ")
+                    print(paper['MedlineCitation']['PMID'])
+                    pmid = str(paper['MedlineCitation']['PMID'])
+                    print()
+    
+                    rare_disease = disease
+    
+                    print("Key Words:")
+                    for keyword in  paper['MedlineCitation']['KeywordList']:
+                        for item in keyword:
+                            print(item + ", ")
+                            keywords = keywords + item + ", "
+            
+                    print()
+                    print("Date:")
+                    for date in paper['MedlineCitation']['Article']['ArticleDate']:
+                        print( str(date['Year']) + "/" + date['Month'] +"/"+ date['Day'])
+                        article_date = str(date['Year']) + "/" + date['Month'] + "/" + date['Day']
+                    print()
+            
+                    print("article title:")
+                    print("%d) %s" % (i + 1, str(paper['MedlineCitation']['Article']['ArticleTitle']).replace("[",'').replace("]","")))
+                    article_title = str(paper['MedlineCitation']['Article']['ArticleTitle']).replace("[",'').replace("]","")
+            
+                    print("Abstract: ")
+                    for abstract_data in paper['MedlineCitation']['Article']['Abstract']['AbstractText']:
+                        print(abstract_data)
+                        abstract = abstract + abstract_data
+    
+                    print()
+                    print("author:")
+                    for person in paper['MedlineCitation']['Article']['AuthorList']:
+                        print("%s %s" % (person['LastName'], person['ForeName']))
+                        for affiliation in person['AffiliationInfo']:
+                            print("%s" % affiliation['Affiliation'])
+                            affiliation = str(affiliation['Affiliation']).replace(",","")
+                            pre_authors = "%s  %s," % (person['LastName'], person['ForeName'])
+                            if "NC" in affiliation or "North Carolina" in affiliation:
+                                authors = authors + pre_authors
+                                authors_affiliations = authors_affiliations + affiliation + ","
+    
+                    print('<--------NEXT--------->')
+        
+                    d['pmid'].append(pmid)
+                    d['rare_disease'].append(rare_disease)
+                    d['keywords'].append(keywords)
+                    d['article_date'].append(article_date)
+                    d['article_title'].append(article_title)
+                    d['abstract'].append(abstract)
+                    d['authors'].append(authors)
+                    d['authors_affiliations'].append(authors_affiliations)
 
-    results = search('Trisomy 18')
-    id_list = results['IdList']
-    papers = fetch_details(id_list)
-    for i, paper in enumerate(papers['PubmedArticle']):
-        print("ID: ")
-        print(paper['MedlineCitation']['PMID'])
-        print()
-        print("Key Words:")
-        for keyword in  paper['MedlineCitation']['KeywordList']:
-            for item in keyword:
-                print(item)
-
-        print()
-        print("Date:")
-        for date in paper['MedlineCitation']['Article']['ArticleDate']:
-            print( str(date['Year']) + "/" + date['Month'] +"/"+ date['Day'])
-        print()
-
-        print("article title:")
-        print("%d) %s" % (i + 1, str(paper['MedlineCitation']['Article']['ArticleTitle']).replace("[",'').replace("]","")))
-
-        print("Abstract: ")
-        for abstract in paper['MedlineCitation']['Article']['Abstract']['AbstractText']:
-            print(abstract)
-        print()
-        print("author:")
-        for person in paper['MedlineCitation']['Article']['AuthorList']:
-            print("%s %s" % (person['LastName'], person['ForeName']))
-            for affiliation in person['AffiliationInfo']:
-                print("%s" % affiliation['Affiliation'])
-        print('<--------NEXT--------->')
-
-
+            except RuntimeError:
+                continue
+            except KeyError:
+                continue
     df = pd.DataFrame(data=d)
 
     df.to_csv("pubmed_articles.csv")
