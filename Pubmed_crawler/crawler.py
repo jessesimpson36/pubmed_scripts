@@ -8,7 +8,7 @@ def search(query):
     Entrez.email = 'email@email.com'
     handle = Entrez.esearch(db='pubmed',
                             sort='relevance',
-                            retmax='5', # modify this to accept all articles when ready.
+                            retmax='1000000000', # modify this to accept all articles when ready.
                             retmode='xml',
                             term=query)
     results = Entrez.read(handle)
@@ -35,10 +35,6 @@ if __name__ == '__main__':
                 pmid, rare_disease, keywords, article_date, article_title, abstract, authors, authors_affiliations = "", "", "", "", "", "", "", "" 
                 disease = disease.strip()
 
-                # Remove this to get all of the rare diseases.
-                if "Ackerman" in disease:
-                    break
-                
                 # appending AND NC to the end will hopefully give values from north carolina.
                 results = search(disease + " AND (NC | North Carolina)")
                 id_list = results['IdList']
