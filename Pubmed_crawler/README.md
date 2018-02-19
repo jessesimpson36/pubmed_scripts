@@ -10,6 +10,7 @@ Currently, the data can be view in the form of JSon structure to get better unde
 
 -Sagar (02/14/2018)
 
-warning: some of the scripts have default output to the scripts current directory.
-         this will either need to be changed or the output will need to be manually 
-         placed into Data
+
+The data is now converted to a CSV rather than JSON.
+
+-Jesse (02/18/2018)

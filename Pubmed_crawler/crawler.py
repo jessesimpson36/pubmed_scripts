@@ -44,8 +44,8 @@ if __name__ == '__main__':
             try:
                 print("  " + disease)
                 j += 1
-                # progress_bar(j,6537,100)
-                progress_bar(j,156,100)
+                progress_bar(j,6537,100)
+                # progress_bar(j,156,100)
 
                 pmid, rare_disease, keywords, article_date, article_title, abstract, authors, authors_affiliations = "", "", "", "", "", "", "", "" 
                 disease = disease.strip()
@@ -58,6 +58,9 @@ if __name__ == '__main__':
                 # May throw a runtime error if there is no results for the searched disease.
                 except RuntimeError:
                     continue
+                except:
+                    continue
+                
                 
                 for i, paper in enumerate(papers['PubmedArticle']):
                     pmid, rare_disease, keywords, article_date, article_title, abstract, authors, authors_affiliations = "", "", "", "", "", "", "", ""
@@ -119,7 +122,7 @@ if __name__ == '__main__':
 
             except:
                     df = pd.DataFrame(data=d)
-                    df.to_csv("pubmed_articles_final_part2.csv")
+                    df.to_csv("pubmed_articles_final.csv")
                     traceback.print_exc()
                     exit()
 
@@ -128,4 +131,4 @@ if __name__ == '__main__':
 
     df = pd.DataFrame(data=d)
 
-    df.to_csv("pubmed_articles_final_part2.csv")
+    df.to_csv("pubmed_articles_final.csv")
