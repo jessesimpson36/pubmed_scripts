@@ -5,13 +5,13 @@ import re
 from nltk import word_tokenize
 import csv
 
-RARE_DX_CO_FILE = "data/rare_dx_co_list.csv"
+RARE_DX_CO_FILE = "rare_dx_co_list.csv"
 
 def get_website_url():
     with open(RARE_DX_CO_FILE, "r") as rdx_co_file:
         datareader = csv.reader(rdx_co_file)
         for row in datareader:
-            url = "http://" + row[0] + ""
+            url = "http://" + str(row[0]).replace(",","").strip() + ""
             yield url
 
 def tag_visible(element):
@@ -23,22 +23,22 @@ def tag_visible(element):
 
 def text_from_html(body):
     soup = BeautifulSoup(body, 'html.parser', from_encoding='utf-8')
-    texts = soup.findAll(text=True)
+    texts = soup.findAll('p',text=True)
     visible_texts = filter(tag_visible, texts)  
-    return " ".join(t.strip() for t in visible_texts)
+    return " ".join(t.text.strip() for t in visible_texts)
 
 def get_rdx_co_name():
     for url in get_website_url():
     # url = 'http://www.janssen.com/us/our-products'
     # outf = 'janssen.com.txt'
-        print '============================='
+        print('=============================')
         try:
-            conn = urllib.urlopen(url)
+            conn = urllib.request.urlopen(url)
             html = conn.read()
             conn.close()
             output = text_from_html(html)
             encoded = output.encode('ascii', 'ignore')
-            tokens = word_tokenize(encoded)
+            tokens = word_tokenize(str(encoded))
             print(" ".join(tokens))
             #with open(outf, 'wb') as f:
             #    f.write(output.encode('ascii', 'ignore'))
